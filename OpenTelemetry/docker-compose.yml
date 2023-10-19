@@ -1,0 +1,94 @@
+# version: '3.4'
+
+# services:
+#   dotnet-api:
+#     container_name: dotnet-api-container
+#     build:
+#       # context: OpenTelemetry.Api
+#       context: .
+#       dockerfile: Dockerfile
+#       args:
+#         - PASSWORD_ENV_SEEDED=${PASSWORD_ENV_SEEDED}
+#     restart: unless-stopped
+#     ports:
+#       - "5152:80"
+#       - "7232:443"
+#     environment:
+#       - PASSWORD_ENV_SEEDED=my_cert_dev_password
+#       - ASPNETCORE_Kestrel__Certificates__Default__Password=${PASSWORD_ENV_SEEDED}
+#       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+#       - ASPNETCORE_URLS=https://+:443;http://+:80
+#       - ASPNETCORE_ENVIRONMENT=Development
+#       - ASPNETCORE_HTTPS_PORT=7232
+
+################################################# v1 #################################################
+version: '3.4'
+
+services:
+  # socialminer.pergamo.job.gaextractor:
+  #   image: ${DOCKER_REGISTRY-}socialminerpergamojobgaextractor
+  #   build:
+  #     context: .
+  #     dockerfile: SocialMiner.Pergamo.Job.GaExtractor/Dockerfile
+  
+  #jaeger:
+  #  image: jaegertracing/all-in-one
+  #  container_name: jaeger
+  #  hostname: jaeger
+  #  restart: always
+  #  ports:
+  #      - "5775:5775/udp"
+  #      - "6831:6831/udp"
+  #      - "6832:6832/udp"
+  #      - "5778:5778"
+  #      - "16686:16686"
+  #      - "14268:14268"
+  #      - "14250:14250"
+  #      - "9411:9411"
+  
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+
+  loki:
+    image: grafana/loki:master
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+
+  grafana:
+    image: grafana/grafana-enterprise:9.2.3
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  otel:
+    image: otel/opentelemetry-collector-contrib
+    container_name: otel
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "1888:1888"   # pprof extension
+      - "8888:8888"   # Prometheus metrics exposed by the collector
+      - "8889:8889"   # Prometheus exporter metrics
+      - "13133:13133" # health_check extension
+      - "4317:4317"        # OTLP gRPC receiver
+      - "55670:55679" # zpages extension
+    depends_on:
+      - zipkin
+      - prometheus
+      - loki
