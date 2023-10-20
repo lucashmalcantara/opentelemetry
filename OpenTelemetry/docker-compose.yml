@@ -1,36 +1,7 @@
-# version: '3.4'
-
-# services:
-#   dotnet-api:
-#     container_name: dotnet-api-container
-#     build:
-#       # context: OpenTelemetry.Api
-#       context: .
-#       dockerfile: Dockerfile
-#       args:
-#         - PASSWORD_ENV_SEEDED=${PASSWORD_ENV_SEEDED}
-#     restart: unless-stopped
-#     ports:
-#       - "5152:80"
-#       - "7232:443"
-#     environment:
-#       - PASSWORD_ENV_SEEDED=my_cert_dev_password
-#       - ASPNETCORE_Kestrel__Certificates__Default__Password=${PASSWORD_ENV_SEEDED}
-#       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
-#       - ASPNETCORE_URLS=https://+:443;http://+:80
-#       - ASPNETCORE_ENVIRONMENT=Development
-#       - ASPNETCORE_HTTPS_PORT=7232
-
-################################################# v1 #################################################
 version: '3.4'
 
 services:
-  # socialminer.pergamo.job.gaextractor:
-  #   image: ${DOCKER_REGISTRY-}socialminerpergamojobgaextractor
-  #   build:
-  #     context: .
-  #     dockerfile: SocialMiner.Pergamo.Job.GaExtractor/Dockerfile
-  
+
   #jaeger:
   #  image: jaegertracing/all-in-one
   #  container_name: jaeger
@@ -46,6 +17,27 @@ services:
   #      - "14250:14250"
   #      - "9411:9411"
   
+  dotnet-api:
+    container_name: dotnet-api
+    image: opentelemetry-dotnet-api:latest
+    restart: unless-stopped
+    ports:
+      - "5152:80"
+      - "7232:443"
+    environment:
+      # >>>>> Configuracao padrao, sem HTTPS
+      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_ENVIRONMENT=Development
+      # <<<<<
+      # >>>>> Usar se quiser configurar HTTPS, descomente o trecho abaixo e comente o trecho acima.
+      # - DEV_CERTIFICATE_PASSWORD_ENV=my_dev_certificate_password
+      # - ASPNETCORE_Kestrel__Certificates__Default__Password=my_dev_certificate_password
+      # - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      # - ASPNETCORE_URLS=https://+:443;http://+:80
+      # - ASPNETCORE_ENVIRONMENT=Development
+      # - ASPNETCORE_HTTPS_PORT=7232
+      # <<<<<
+
   zipkin:
     image: openzipkin/zipkin
     container_name: zipkin
