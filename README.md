@@ -56,6 +56,59 @@ HTTPS: https://localhost:7232/WeatherForecast
 
 
 
+# PROCESSO DE CONFIGURAÇÃO DA API .NET
+
+
+
+## Configuração do Prometheus na API
+
+No GitHub da biblioteca do Promtheus para .NET, encontra-se um excelente exemplo de implementação que foi utilizado como base na implementação deste projeto: [Sample.Web](https://github.com/prometheus-net/prometheus-net/blob/master/Sample.Web/Program.cs)
+
+1 - Instalar os pacotes do Prometheus para exportar métricas automaticamente.
+
+- `prometheus-net.AspNetCore`
+
+- `prometheus-net.AspNetCore.HealthChecks` (opicional; para publicar os resultados de health check)
+
+2 - Adicionar Health Check.
+
+```csharp
+            builder.Services.AddHealthChecks()
+                // Define a sample health check that always signals healthy state.
+                .AddCheck<SampleHealthCheck>(nameof(SampleHealthCheck))
+                // Report health check results in the metrics output.
+                .ForwardToPrometheus();
+```
+
+3 - Adicionar `UseHttpMetrics` e `MapMetrics`.
+
+```csharp
+// ...
+
+            // Capture metrics about all received HTTP requests.
+            app.UseHttpMetrics();
+
+// ...
+            // Enable the /metrics page to export Prometheus metrics.
+            // Open http://localhost:port/metrics to see the metrics.
+            //
+            // Metrics published in this sample:
+            // * built-in process metrics giving basic information about the .NET runtime (enabled by default)
+            // * metrics from .NET Event Counters (enabled by default, updated every 10 seconds)
+            // * metrics from .NET Meters (enabled by default)
+            // * metrics about requests made by registered HTTP clients
+            // * metrics about requests handled by the web app
+            // * ASP.NET health check statuses
+            // * custom business logic metrics published
+            app.MapMetrics();
+
+// ..
+```
+
+
+
+
+
 # REFERÊNCIAS
 
 
@@ -67,3 +120,7 @@ HTTPS: https://localhost:7232/WeatherForecast
 - https://learn.microsoft.com/en-us/aspnet/core/security/docker-https?view=aspnetcore-3.1
 
 - https://learn.microsoft.com/en-us/aspnet/core/security/docker-compose-https?view=aspnetcore-3.1
+
+- [Coletar métricas - .NET | Microsoft Learn](https://learn.microsoft.com/pt-br/dotnet/core/diagnostics/metrics-collection)
+
+- [GitHub - prometheus-net](https://github.com/prometheus-net/prometheus-net)

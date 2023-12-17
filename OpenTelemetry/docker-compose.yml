@@ -22,8 +22,8 @@ services:
     image: opentelemetry-dotnet-api:latest
     restart: unless-stopped
     ports:
-      - "5152:80"
-      - "7232:443"
+      - "7000:80"
+      - "7001:443"
     environment:
       # >>>>> Configuracao padrao, sem HTTPS
       - ASPNETCORE_URLS=http://+:80
@@ -58,6 +58,9 @@ services:
       - "3000:3000"
     environment:
       - GF_INSTALL_PLUGINS=grafana-piechart-panel
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
 
   prometheus:
     container_name: prometheus
@@ -78,7 +81,7 @@ services:
       - "8888:8888"   # Prometheus metrics exposed by the collector
       - "8889:8889"   # Prometheus exporter metrics
       - "13133:13133" # health_check extension
-      - "4317:4317"        # OTLP gRPC receiver
+      - "4317:4317"   # OTLP gRPC receiver
       - "55670:55679" # zpages extension
     depends_on:
       - zipkin
