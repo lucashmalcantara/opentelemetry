@@ -1,53 +1,77 @@
 # Launch command: docker-compose up
 name: opentelemetry-app
 services:
+
+  # OpenTelemetry Collector
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.61.0
-    container_name: otel-collector
+    image: otel/opentelemetry-collector-contrib:0.88.0
     volumes:
-      - ./config/collector.yml:/etc/otel/config.yaml
+      - ./config/otel-config.yaml:/etc/otel/config.yaml
+      - ./log:/log/otel
     command: --config /etc/otel/config.yaml
+    environment:
+      JAEGER_ENDPOINT: "jaeger:4317"
+      LOKI_ENDPOINT: "http://loki:3100/loki/api/v1/push"
+    ports:
+      - "8889:8889"   # Prometheus metrics exporter (scrape endpoint)
+      - "13133:13133" # health_check extension
+      - "55679:55679" # ZPages extension
     depends_on:
       - jaeger
       - prometheus
+      - loki
 
   jaeger:
-    image: jaegertracing/all-in-one:1.38.1
-    container_name: jaeger
-    environment:
-      COLLECTOR_OTLP_ENABLED: true
+    image: jaegertracing/all-in-one:1.50.0
     ports:
-      - 16686:16686 # Jaeger UI
+      - 16686:16686 # Jaeger Web UI
 
   prometheus:
-    image: prom/prometheus:v2.40.5
-    container_name: prometheus
+    image: prom/prometheus:v2.42.0
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - 9090:9090 # Prometheus UI
 
+  loki:
+    image: grafana/loki:2.7.4
+    ports:
+      - 3100:3100
+
+  grafana:
+    image: grafana/grafana:9.4.3
+    volumes:
+      - ./config/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
+    ports:
+      - "3000:3000"
+
   redis:
     image: redis:6.2
     container_name: redis
     environment:
-      ALLOW_EMPTY_PASSWORD: "yes"
+      ALLOW_EMPTY_PASSWORD: yes
 
-  # opentelemetry-api:
-  #   image: opentelemetry-api
-  #   container_name: opentelemetry-api
-  #   depends_on:
-  #     - redis
-  #   build:
-  #     context: .
-  #     dockerfile: OpenTelemetry.Api/Dockerfile
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     REDIS_HOST: redis
-  #     OTEL_SERVICE_NAME: opentelemetry-api
-  #     OTEL_RESOURCE_ATTRIBUTES: deployment.environment=production,service.version=1.0.0.0
-  #     OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
-  #     OTEL_DOTNET_AUTO_METRICS_ADDITIONAL_SOURCES: "OpenTelemetry.Api"
-  #   ports:
-  #     - 8080:8080
+  opentelemetry-api:
+    image: opentelemetry-api
+    container_name: opentelemetry-api
+    depends_on:
+      - otel-collector
+      - redis
+    build:
+      context: .
+      dockerfile: OpenTelemetry.Api/Dockerfile
+    env_file:
+      - otel-dotnet.env  # enable OpenTelemetry .NET Automatic Instrumentation
+    environment:
+      REDIS_HOST: redis
+      # OpenTelemetry environmental variables:
+      OTEL_SERVICE_NAME: opentelemetry-api
+      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=production,service.version=1.0.0.0
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      OTEL_DOTNET_AUTO_TRACES_ADDITIONAL_SOURCES: "OpenTelemetry.Api"
+      OTEL_DOTNET_AUTO_METRICS_ADDITIONAL_SOURCES: "OpenTelemetry.Api"
+    ports:
+      - 8080:8080

@@ -108,10 +108,18 @@ No GitHub da biblioteca do Promtheus para .NET, encontra-se um excelente exemplo
 
 
 
+```
+docker-compose up --build --detach
+```
+
 
 # REFERÊNCIAS
 
 - https://www.twilio.com/en-us/blog/automatic-instrumentation-of-containerized-dotnet-applications-with-opentelemetry
+- https://opentelemetry.io/docs/languages/net/automatic/
+    - https://github.com/open-telemetry/opentelemetry-dotnet-instrumentation/blob/main/examples/demo/docker-compose.yaml
+
+
 
 - https://stackoverflow.com/questions/69282468/using-dotnet-dev-certs-with-aspnet-docker-image
 

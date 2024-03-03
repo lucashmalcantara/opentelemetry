@@ -9,14 +9,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.dockerignore = .dockerignore
 		docker-compose.yml = docker-compose.yml
+		otel-dotnet.env = otel-dotnet.env
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApplication1", "WebApplication1\WebApplication1.csproj", "{22FCAE49-98A6-4CCA-B6AD-2D5FFC6187F8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "config", "config", "{051931B3-E8A7-413C-98C5-A178DA87F020}"
 	ProjectSection(SolutionItems) = preProject
-		config\collector.yml = config\collector.yml
 		config\prometheus.yml = config\prometheus.yml
+		config\otel-config.yaml = config\otel-config.yaml
 	EndProjectSection
 EndProject
 Global
