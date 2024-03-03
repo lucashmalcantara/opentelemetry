@@ -111,7 +111,7 @@ No GitHub da biblioteca do Promtheus para .NET, encontra-se um excelente exemplo
 
 # REFERÊNCIAS
 
-
+- https://www.twilio.com/en-us/blog/automatic-instrumentation-of-containerized-dotnet-applications-with-opentelemetry
 
 - https://stackoverflow.com/questions/69282468/using-dotnet-dev-certs-with-aspnet-docker-image
 
@@ -124,3 +124,9 @@ No GitHub da biblioteca do Promtheus para .NET, encontra-se um excelente exemplo
 - [Coletar métricas - .NET | Microsoft Learn](https://learn.microsoft.com/pt-br/dotnet/core/diagnostics/metrics-collection)
 
 - [GitHub - prometheus-net](https://github.com/prometheus-net/prometheus-net)
+
+# RASCUNHO
+
+```shel
+podman build -f ./OpenTelemetry.Api/Dockerfile . -t opentelemetry-api:latest
+```

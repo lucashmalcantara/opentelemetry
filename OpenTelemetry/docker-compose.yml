@@ -1,89 +1,53 @@
-version: '3.4'
-
+# Launch command: docker-compose up
+name: opentelemetry-app
 services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.61.0
+    container_name: otel-collector
+    volumes:
+      - ./config/collector.yml:/etc/otel/config.yaml
+    command: --config /etc/otel/config.yaml
+    depends_on:
+      - jaeger
+      - prometheus
 
-  #jaeger:
-  #  image: jaegertracing/all-in-one
-  #  container_name: jaeger
-  #  hostname: jaeger
-  #  restart: always
-  #  ports:
-  #      - "5775:5775/udp"
-  #      - "6831:6831/udp"
-  #      - "6832:6832/udp"
-  #      - "5778:5778"
-  #      - "16686:16686"
-  #      - "14268:14268"
-  #      - "14250:14250"
-  #      - "9411:9411"
-  
-  dotnet-api:
-    container_name: dotnet-api
-    image: opentelemetry-dotnet-api:latest
-    restart: unless-stopped
-    ports:
-      - "7000:80"
-      - "7001:443"
+  jaeger:
+    image: jaegertracing/all-in-one:1.38.1
+    container_name: jaeger
     environment:
-      # >>>>> Configuracao padrao, sem HTTPS
-      - ASPNETCORE_URLS=http://+:80
-      - ASPNETCORE_ENVIRONMENT=Development
-      # <<<<<
-      # >>>>> Usar se quiser configurar HTTPS, descomente o trecho abaixo e comente o trecho acima.
-      # - DEV_CERTIFICATE_PASSWORD_ENV=my_dev_certificate_password
-      # - ASPNETCORE_Kestrel__Certificates__Default__Password=my_dev_certificate_password
-      # - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
-      # - ASPNETCORE_URLS=https://+:443;http://+:80
-      # - ASPNETCORE_ENVIRONMENT=Development
-      # - ASPNETCORE_HTTPS_PORT=7232
-      # <<<<<
-
-  zipkin:
-    image: openzipkin/zipkin
-    container_name: zipkin
+      COLLECTOR_OTLP_ENABLED: true
     ports:
-      - "9411:9411"
-
-  loki:
-    image: grafana/loki:master
-    container_name: loki
-    ports:
-      - "3100:3100"
-    command: -config.file=/etc/loki/local-config.yaml
-
-  grafana:
-    image: grafana/grafana-enterprise:9.2.3
-    container_name: grafana
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_INSTALL_PLUGINS=grafana-piechart-panel
-      - GF_AUTH_DISABLE_LOGIN_FORM=true
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - 16686:16686 # Jaeger UI
 
   prometheus:
+    image: prom/prometheus:v2.40.5
     container_name: prometheus
-    image: prom/prometheus:latest
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
-      - "9090:9090"
+      - 9090:9090 # Prometheus UI
 
-  otel:
-    image: otel/opentelemetry-collector-contrib
-    container_name: otel
-    command: ["--config=/etc/otel-collector-config.yaml"]
-    volumes:
-      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
-    ports:
-      - "1888:1888"   # pprof extension
-      - "8888:8888"   # Prometheus metrics exposed by the collector
-      - "8889:8889"   # Prometheus exporter metrics
-      - "13133:13133" # health_check extension
-      - "4317:4317"   # OTLP gRPC receiver
-      - "55670:55679" # zpages extension
-    depends_on:
-      - zipkin
-      - prometheus
-      - loki
+  redis:
+    image: redis:6.2
+    container_name: redis
+    environment:
+      ALLOW_EMPTY_PASSWORD: "yes"
+
+  # opentelemetry-api:
+  #   image: opentelemetry-api
+  #   container_name: opentelemetry-api
+  #   depends_on:
+  #     - redis
+  #   build:
+  #     context: .
+  #     dockerfile: OpenTelemetry.Api/Dockerfile
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     REDIS_HOST: redis
+  #     OTEL_SERVICE_NAME: opentelemetry-api
+  #     OTEL_RESOURCE_ATTRIBUTES: deployment.environment=production,service.version=1.0.0.0
+  #     OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+  #     OTEL_DOTNET_AUTO_METRICS_ADDITIONAL_SOURCES: "OpenTelemetry.Api"
+  #   ports:
+  #     - 8080:8080

@@ -1,8 +1,5 @@
 
-using OpenTelemetry.Api.HealthChecks;
-using System.Diagnostics.Metrics;
-
-namespace OpenTelemetry.Api
+namespace WebApplication1
 {
     public class Program
     {
@@ -17,10 +14,6 @@ namespace OpenTelemetry.Api
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddHealthChecks()
-                // Define a sample health check that always signals healthy state.
-                .AddCheck<SampleHealthCheck>(nameof(SampleHealthCheck));
-
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -34,11 +27,8 @@ namespace OpenTelemetry.Api
 
             app.UseAuthorization();
 
-            app.MapControllers();
 
-            var meter = new Meter("OpenTelemetry.Api", "1.0.0");
-            var incrementRequests = meter.CreateCounter<int>("srv.increment-request.count", "requests", "Number of increment operations");
-            var getRequests = meter.CreateCounter<int>("srv.get-request.count", "requests", "Number of get operations");
+            app.MapControllers();
 
             app.Run();
         }

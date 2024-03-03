@@ -3,14 +3,20 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34031.279
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenTelemetry.Api", "OpenTelemetry.Api\OpenTelemetry.Api.csproj", "{DB1CC0A4-1054-41F8-BC9B-B213B23FAEDE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenTelemetry.Api", "OpenTelemetry.Api\OpenTelemetry.Api.csproj", "{DB1CC0A4-1054-41F8-BC9B-B213B23FAEDE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A15234B1-6EA5-475B-9C61-3F982777958F}"
 	ProjectSection(SolutionItems) = preProject
 		.dockerignore = .dockerignore
-		otel-collector-config.yaml = otel-collector-config.yaml
 		docker-compose.yml = docker-compose.yml
-		prometheus.yml = prometheus.yml
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApplication1", "WebApplication1\WebApplication1.csproj", "{22FCAE49-98A6-4CCA-B6AD-2D5FFC6187F8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "config", "config", "{051931B3-E8A7-413C-98C5-A178DA87F020}"
+	ProjectSection(SolutionItems) = preProject
+		config\collector.yml = config\collector.yml
+		config\prometheus.yml = config\prometheus.yml
 	EndProjectSection
 EndProject
 Global
@@ -23,9 +29,16 @@ Global
 		{DB1CC0A4-1054-41F8-BC9B-B213B23FAEDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB1CC0A4-1054-41F8-BC9B-B213B23FAEDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB1CC0A4-1054-41F8-BC9B-B213B23FAEDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22FCAE49-98A6-4CCA-B6AD-2D5FFC6187F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22FCAE49-98A6-4CCA-B6AD-2D5FFC6187F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22FCAE49-98A6-4CCA-B6AD-2D5FFC6187F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22FCAE49-98A6-4CCA-B6AD-2D5FFC6187F8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{051931B3-E8A7-413C-98C5-A178DA87F020} = {A15234B1-6EA5-475B-9C61-3F982777958F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {01EE7749-A569-4FD3-9487-52BE3C965319}
